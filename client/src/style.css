@@ -1,0 +1,266 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+body{
+    background-color: #212B30;
+    color: #CEE5F2;
+    font-family: "Josefin Sans";
+}
+#header{
+    display: flex;
+    justify-content: space-between;
+    height: 7vh;
+}
+#logo{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 14vw;
+}
+#logo h2{
+    margin: 0;
+}
+#menu{
+    display: flex;
+    align-items: center;
+}
+#tituloMenu p{
+    font-size: small;
+}
+#opcoesMenu{
+    list-style: none;
+}
+#opcoesMenu li{
+    border-top: #212B30 0.5px solid;
+    border-bottom: #212B30 0.5px solid;
+}
+#home{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 90vh;
+}
+#corpo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70vw;
+    height: 80vh;
+}
+#dispositivos{
+    border: #CEE5F2 1px solid;
+    border-radius: 3%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    width: 24vw;
+    height: 50vh;
+    background-color: #34475B;
+    color: #CEE5F2;
+    margin-right: 2%;
+}
+.numDispositivos{
+    border: #CEE5F2 1px solid;
+    border-start-start-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    width: 19vw;
+    height: 7vh;
+    color: #CEE5F2;
+    background-color: #212B30;
+    display: flex;
+    align-items: end;
+    justify-content: end;
+}
+.cadastro, .vazamento{
+    border: #CEE5F2 1px solid;
+    border-radius: 3%;
+    background-color: #34475B;
+    width: 20vw;
+    height: 23vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2%;
+}
+.cadastro{
+    margin-bottom: 9%;
+}
+.vazamento{
+    margin-top: 9%;
+}
+a{
+    text-decoration: none;
+    color: #CEE5F2;
+}
+#bodyCadastro{
+    width: 100vw;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#headerCadastro{
+    width: 60vw;
+    height: 7vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #3C5268;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+#headerCadastro h2{
+    margin: 0;
+}
+form{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    width: 60vw;
+    height: 60vh;
+    color: #212B30;
+    background-color: #CEE5F2;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+form input{
+    border-radius: 5px;
+    border: none;
+}
+#nome{
+    display: flex;
+    flex-direction: column;
+    width: 25vw;
+}
+#dep{
+    display: flex;
+    flex-direction: column;
+    width: 25vw;
+}
+#email{
+    display: flex;
+    flex-direction: column;
+    width: 25vw;
+}
+#nomedisp{
+    display: flex;
+    flex-direction: column;
+    width: 25vw;
+}
+#tipodisp{
+    display: flex;
+    flex-direction: column;
+    width: 25vw;
+}
+#so{
+    display: flex;
+    flex-direction: column;
+    width: 25vw;
+}
+form button{
+    width: 15vw;
+    height: 5vh;
+    border: none;
+    border-radius: 5px;
+    background-color: #3C5268;
+    color: #EFF2FB;
+}
+.headerCadastro h2{
+    margin: 0;
+}
+#page_vazamentos{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 90vh;
+}
+#Vazamento{
+    display: flex;
+    flex-direction: column;
+    width: 60vw;
+    height: 60vw;
+}
+#bodyVazamento{
+    width: 60vw;
+    height: 60vh;
+    background-color: #3C5268;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+#headerVazamento{
+    width: 60vw;
+    height: 7vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #212B30;
+    background-color: #CEE5F2;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+#headerVazamento h2{
+    margin: 0;
+}
+.vazaCards{
+    width: 20vw;
+    height: 40vh;
+    display: flex;
+    flex-direction: column;
+}
+.header_vazaCard{
+    height: 4vh;
+    background-color: #212B30;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.header_vazaCard h5{
+    margin: 0;
+}
+.body_vazaCard{
+    color: #212B30;
+    background-color: #EFF2FB;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    height: 40vh;
+}
+#conteudo_card{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0;
+}
+#buttonplus{
+    display: flex;
+    align-items: center;
+    width: 2vw;
+    height: 6vh;
+}
+#buttonplus button{
+    width: 2vw;
+    height: 4vh;
+    border: none;
+    border-radius: 25px;
+    background-color: #212B30;
+    color: #CEE5F2;
+    font-size: large;
+}
+.button_card{
+    width: 10vw;
+    height: 3vh;
+    border: none;
+    border-radius: 5px;
+    background-color: #212B30;
+    color: #CEE5F2;
+}
