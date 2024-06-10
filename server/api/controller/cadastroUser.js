@@ -1,128 +1,226 @@
-const uuidv4 = require('uuid/v4')
-const axios = require('axios')
-const https = require('https')
+const uuidv4 = require("uuid/v4");
+const axios = require("axios");
+const oracledb = require("oracledb");
 
 module.exports = (app) => {
-  const cadastroUserDB = app.data.cadastroUser
-  const controller = {}
+  const cadastroUserDB = app.data.cadastroUser;
+  const controller = {};
 
   const sendResponse = ({ message, res, status, BD }) =>
-    res.status(status).json({ message, BD })
+    res.status(status).json({ message, BD });
 
   const sendResponseVazamento = ({ message, res, status, response }) =>
-    res.status(status).json({ message, response })
+    res.status(status).json({ message, response });
 
-  const { cadastroUser: cadastroUserMock } = cadastroUserDB
+  const { cadastroUser: cadastroUserMock } = cadastroUserDB;
 
-  const { data } = cadastroUserMock
+  const { data } = cadastroUserMock;
 
   controller.list = (req, res) => {
-    res.status(200).json(data)
-  }
+    res.status(200).json(data);
+  };
 
-  controller.getUser = (req, res) => {
-    const filtered = req.params
-    const filterUser = data.find((user) => user.id == filtered.id)
-    res.status(200).json(filterUser)
-  }
+  controller.getUser = async (req, res) => {
+    const { id } = req.params;
+    let connection;
 
-  controller.save = (req, res) => {
-    const user = {
-      id: uuidv4(),
-      name: req.body.name,
-      email: req.body.email,
-    }
-    cadastroUserMock.data.push(user)
+    try {
+      // Obtém uma conexão do pool
+      connection = await oracledb.getConnection();
 
-    res.status(201).json(user)
-  }
+      // Chama a procedure getUser do banco de dados
+      const result = await connection.execute(
+        `BEGIN 
+           getUser(:id, :user);
+         END;`,
+        {
+          id: { val: id, type: oracledb.NUMBER, dir: oracledb.BIND_IN },
+          user: { type: oracledb.CURSOR, dir: oracledb.BIND_OUT },
+        }
+      );
 
-  controller.remove = (req, res) => {
-    const { id } = req.params
-    const foundCadastroUserIdex = cadastroUserMock.data.findIndex(
-      (cadastroUser) => cadastroUser.id == id,
-    )
-    let notFound = foundCadastroUserIdex === -1
-    let message = !notFound ? 'Usuario deletado' : 'Usuario não encontrado'
-    let BD, status
+      // Obtém os dados do cursor
+      const resultSet = result.outBinds.user;
+      const user = await resultSet.getRow();
 
-    if (notFound) {
-      BD = { cadastroUser: cadastroUserMock }
-      status = 404
-    } else {
-      const deleteUser = {
-        id: id,
-        ...req.body,
+      if (user) {
+        res.status(200).json(user);
+      } else {
+        res.status(404).json({ message: "Usuário não encontrado" });
       }
-      cadastroUserMock.data.splice(foundCadastroUserIdex, 1, deleteUser)
-      BD = { usuario: deleteUser }
-      status = 200
-    }
-    sendResponse({ message, status, BD, res })
-  }
-
-  controller.update = (req, res) => {
-    const { id } = req.params
-    const foundCadastroUserIdex = cadastroUserMock.data.find((cadastroUser) => {
-      cadastroUser.id == id
-    })
-
-    let notFound = foundCadastroUserIdex === -1
-    let message = !notFound ? 'Usuario atualizado' : 'Usuario não encontrado'
-    let BD, status
-    if (notFound) {
-      BD = { cadastroUser: cadastroUserMock }
-      status = 404
-    } else {
-      const newCadastroUser = {
-        id: id,
-        ...req.body,
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
+    } finally {
+      if (connection) {
+        try {
+          // Fecha a conexão
+          await connection.close();
+        } catch (err) {
+          console.error(err);
+        }
       }
-      cadastroUserMock.data.splice(foundCadastroUserIdex, 1, newCadastroUser)
-      BD = { usuario: newCadastroUser }
-      status = 200
     }
-    sendResponse({ message, status, BD, res })
-  }
+  };
+
+  controller.save = async (req, res) => {
+    let connection;
+    try {
+      // Obtém uma conexão do pool
+      connection = await oracledb.getConnection();
+
+      // Chama a procedure saveUser do banco de dados
+      await connection.execute(
+        `BEGIN 
+           saveUser(:id, :name, :email);
+         END;`,
+        {
+          id: { val: uuidv4(), type: oracledb.STRING, dir: oracledb.BIND_IN },
+          name: {
+            val: req.body.name,
+            type: oracledb.STRING,
+            dir: oracledb.BIND_IN,
+          },
+          email: {
+            val: req.body.email,
+            type: oracledb.STRING,
+            dir: oracledb.BIND_IN,
+          },
+        }
+      );
+
+      res.status(201).json({ message: "Usuário criado com sucesso" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
+    } finally {
+      if (connection) {
+        try {
+          // Fecha a conexão
+          await connection.close();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+  };
+
+  controller.update = async (req, res) => {
+    const { id } = req.params;
+    let connection;
+
+    try {
+      // Obtém uma conexão do pool
+      connection = await oracledb.getConnection();
+
+      // Chama a procedure updateUser do banco de dados
+      await connection.execute(
+        `BEGIN 
+           updateUser(:id, :name, :email);
+         END;`,
+        {
+          id: { val: id, type: oracledb.STRING, dir: oracledb.BIND_IN },
+          name: {
+            val: req.body.name,
+            type: oracledb.STRING,
+            dir: oracledb.BIND_IN,
+          },
+          email: {
+            val: req.body.email,
+            type: oracledb.STRING,
+            dir: oracledb.BIND_IN,
+          },
+        }
+      );
+
+      res.status(200).json({ message: "Usuário atualizado com sucesso" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
+    } finally {
+      if (connection) {
+        try {
+          // Fecha a conexão
+          await connection.close();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+  };
+
+  controller.remove = async (req, res) => {
+    const { id } = req.params;
+    let connection;
+
+    try {
+      // Obtém uma conexão do pool
+      connection = await oracledb.getConnection();
+
+      // Chama a procedure deleteUser do banco de dados
+      await connection.execute(
+        `BEGIN 
+           deleteUser(:id);
+         END;`,
+        {
+          id: { val: id, type: oracledb.STRING, dir: oracledb.BIND_IN },
+        }
+      );
+
+      res.status(200).json({ message: "Usuário deletado com sucesso" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
+    } finally {
+      if (connection) {
+        try {
+          // Fecha a conexão
+          await connection.close();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+  };
 
   controller.getLeak = (req, res) => {
-    const { email } = req.params
+    const { email } = req.params;
 
-    const apiKey = 'chave'
-    const urlFicticia = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}`
-    let message = ''
-    let status = null
+    const apiKey = "chave";
+    const urlFicticia = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}`;
+    let message = "";
+    let status = null;
     axios
       .get(urlFicticia, {
         headers: {
-          'hibp-api-key': apiKey,
+          "hibp-api-key": apiKey,
         },
       })
       .then((response) => {
         if (response.data.error) {
-          message = 'Usuário não possui vazamentos'
-          status = 404
+          message = "Usuário não possui vazamentos";
+          status = 404;
 
-          return sendResponse({ message, status, BD, res })
+          return sendResponse({ message, status, BD, res });
         }
-        message = 'Usuário possui vazamentos'
-        status = 200
+        message = "Usuário possui vazamentos";
+        status = 200;
         return sendResponseVazamento({
           message,
           status,
           response: response.data,
           res,
-        })
+        });
       })
       .catch((error) => {
         if (error) {
-          message = 'Usuário não possui vazamentos'
-          status = 404
+          message = "Usuário não possui vazamentos";
+          status = 404;
 
-          return sendResponseVazamento({ message, status, res })
+          return sendResponseVazamento({ message, status, res });
         }
-      })
-  }
+      });
+  };
 
-  return controller
-}
+  return controller;
+};
