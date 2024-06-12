@@ -27,7 +27,8 @@ module.exports = (app) => {
     try {
       // Obtém uma conexão do pool
       connection = await oracledb.getConnection();
-
+      const result2 = await connection.execute('SELECT 1 FROM DUAL');
+      console.log(result2.rows);
       // Chama a procedure getUser do banco de dados
       const result = await connection.execute(
         `BEGIN 
