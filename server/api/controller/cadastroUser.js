@@ -25,48 +25,49 @@ module.exports = (app) => {
     let connection;
 
     try {
-        // Obtém uma conexão do pool
-        connection = await oracledb.getConnection();
-        console.log(connection);
+      // Obtém uma conexão do pool
+      connection = await oracledb.getConnection();
 
-        // Executa uma consulta para listar todas as tabelas
-        const tablesResult = await connection.execute('SELECT table_name FROM user_tables');
-        console.log('Tabelas no esquema:', tablesResult.rows);
+      // Executa uma consulta para listar todas as tabelas
+      const tablesResult = await connection.execute(
+        "SELECT table_name FROM user_tables"
+      );
+      console.log("Tabelas no esquema:", tablesResult.rows);
 
-        // Chama a procedure getUser do banco de dados
-        // const result = await connection.execute(
-        //     `BEGIN 
-        //        getUser(:id, :user);
-        //      END;`,
-        //     {
-        //         id: { val: id, type: oracledb.NUMBER, dir: oracledb.BIND_IN },
-        //         user: { type: oracledb.CURSOR, dir: oracledb.BIND_OUT },
-        //     }
-        // );
-
-        // // Obtém os dados do cursor
-        // const resultSet = result.outBinds.user;
-        const user = [{name: 'teste'}];
-
-        if (user) {
-            res.status(200).json(user);
-        } else {
-            res.status(404).json({ message: "Usuário não encontrado" });
+      // Chama a procedure getUser do banco de dados
+      const result = await connection.execute(
+        `BEGIN 
+               getUser(:id, :user);
+             END;`,
+        {
+          id: { val: id, type: oracledb.NUMBER, dir: oracledb.BIND_IN },
+          user: { type: oracledb.CURSOR, dir: oracledb.BIND_OUT },
         }
+      );
+
+      // Obtém os dados do cursor
+      const resultSet = result.outBinds.user;
+      const user = await resultSet.getRow();
+
+      if (user) {
+        res.status(200).json(user);
+      } else {
+        res.status(404).json({ message: "Usuário não encontrado" });
+      }
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
+      console.error(err);
+      res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
     } finally {
-        if (connection) {
-            try {
-                // Fecha a conexão
-                await connection.close();
-            } catch (err) {
-                console.error(err);
-            }
+      if (connection) {
+        try {
+          // Fecha a conexão
+          await connection.close();
+        } catch (err) {
+          console.error(err);
         }
+      }
     }
-};
+  };
 
   controller.save = async (req, res) => {
     let connection;
