@@ -34,19 +34,19 @@ module.exports = (app) => {
         console.log('Tabelas no esquema:', tablesResult.rows);
 
         // Chama a procedure getUser do banco de dados
-        const result = await connection.execute(
-            `BEGIN 
-               getUser(:id, :user);
-             END;`,
-            {
-                id: { val: id, type: oracledb.NUMBER, dir: oracledb.BIND_IN },
-                user: { type: oracledb.CURSOR, dir: oracledb.BIND_OUT },
-            }
-        );
+        // const result = await connection.execute(
+        //     `BEGIN 
+        //        getUser(:id, :user);
+        //      END;`,
+        //     {
+        //         id: { val: id, type: oracledb.NUMBER, dir: oracledb.BIND_IN },
+        //         user: { type: oracledb.CURSOR, dir: oracledb.BIND_OUT },
+        //     }
+        // );
 
-        // Obtém os dados do cursor
-        const resultSet = result.outBinds.user;
-        const user = await resultSet.getRow();
+        // // Obtém os dados do cursor
+        // const resultSet = result.outBinds.user;
+        const user = [{name: 'teste'}];
 
         if (user) {
             res.status(200).json(user);
