@@ -14,7 +14,6 @@ function convertLeakedData(dataClasses) {
         "Names": "Nome",
         "Email addresses": "Email",
         "Passwords": "Senha",
-        "Usernames": "Nome de Usuário"
     };
 
     return dataClasses

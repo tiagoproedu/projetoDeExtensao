@@ -14,7 +14,6 @@ module.exports = (app) => {
     res.status(status).json({ message, response: response });
 
   const { cadastroUser: cadastroUserMock } = cadastroUserDB;
-
   const { data } = cadastroUserMock;
 
   controller.list = (req, res) => {
@@ -26,16 +25,12 @@ module.exports = (app) => {
     let connection;
 
     try {
-      // Obtém uma conexão do pool
       connection = await oracledb.getConnection();
-
-      // Executa uma consulta para listar todas as tabelas
       const tablesResult = await connection.execute(
         "SELECT table_name FROM user_tables"
       );
       console.log("Tabelas no esquema:", tablesResult.rows);
 
-      // Chama a procedure getUser do banco de dados
       const result = await connection.execute(
         `BEGIN 
                getUser(:id, :user);
@@ -46,7 +41,6 @@ module.exports = (app) => {
         }
       );
 
-      // Obtém os dados do cursor
       const resultSet = result.outBinds.user;
       const user = await resultSet.getRow();
 
@@ -61,7 +55,6 @@ module.exports = (app) => {
     } finally {
       if (connection) {
         try {
-          // Fecha a conexão
           await connection.close();
         } catch (err) {
           console.error(err);
@@ -72,38 +65,46 @@ module.exports = (app) => {
 
   controller.save = async (req, res) => {
     let connection;
+    const { email, name } = req.body; // Adiciona a extração do email e name
+
     try {
-      // Obtém uma conexão do pool
-      connection = await oracledb.getConnection();
+      // connection = await oracledb.getConnection();
+      // await connection.execute(
+      //   `BEGIN 
+      //      saveUser(:id, :name, :email);
+      //    END;`,
+      //   {
+      //     id: { val: uuidv4(), type: oracledb.STRING, dir: oracledb.BIND_IN },
+      //     name: {
+      //       val: name,
+      //       type: oracledb.STRING,
+      //       dir: oracledb.BIND_IN,
+      //     },
+      //     email: {
+      //       val: email,
+      //       type: oracledb.STRING,
+      //       dir: oracledb.BIND_IN,
+      //     },
+      //   }
+      // );
 
-      // Chama a procedure saveUser do banco de dados
-      await connection.execute(
-        `BEGIN 
-           saveUser(:id, :name, :email);
-         END;`,
-        {
-          id: { val: uuidv4(), type: oracledb.STRING, dir: oracledb.BIND_IN },
-          name: {
-            val: req.body.name,
-            type: oracledb.STRING,
-            dir: oracledb.BIND_IN,
-          },
-          email: {
-            val: req.body.email,
-            type: oracledb.STRING,
-            dir: oracledb.BIND_IN,
-          },
-        }
-      );
+      // Chame a função getLeak e aguarde sua resposta
+      const responseLeak = await new Promise((resolve, reject) => {
+        controller.getLeak({ params: { email } }, {
+          status: (statusCode) => ({
+            json: (data) => resolve({ statusCode, data })
+          })
+        });
+      });
 
-      res.status(201).json({ message: "Usuário criado com sucesso" });
+      const message = "Usuário criado com sucesso";
+      res.status(responseLeak.statusCode).json({ message, leakData: responseLeak.data });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
     } finally {
       if (connection) {
         try {
-          // Fecha a conexão
           await connection.close();
         } catch (err) {
           console.error(err);
@@ -117,10 +118,7 @@ module.exports = (app) => {
     let connection;
 
     try {
-      // Obtém uma conexão do pool
       connection = await oracledb.getConnection();
-
-      // Chama a procedure updateUser do banco de dados
       await connection.execute(
         `BEGIN 
            updateUser(:id, :name, :email);
@@ -147,7 +145,6 @@ module.exports = (app) => {
     } finally {
       if (connection) {
         try {
-          // Fecha a conexão
           await connection.close();
         } catch (err) {
           console.error(err);
@@ -161,10 +158,7 @@ module.exports = (app) => {
     let connection;
 
     try {
-      // Obtém uma conexão do pool
       connection = await oracledb.getConnection();
-
-      // Chama a procedure deleteUser do banco de dados
       await connection.execute(
         `BEGIN 
            deleteUser(:id);
@@ -181,7 +175,6 @@ module.exports = (app) => {
     } finally {
       if (connection) {
         try {
-          // Fecha a conexão
           await connection.close();
         } catch (err) {
           console.error(err);
@@ -192,7 +185,6 @@ module.exports = (app) => {
 
   controller.getLeak = (req, res) => {
     const { email } = req.params;
-
     const apiKey = "af0b71df3c064e80a58c9d8cfdac51c4";
     const url = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}?truncateResponse=false`;
     let message = "";
@@ -207,7 +199,6 @@ module.exports = (app) => {
         if (response.data.error) {
           message = "Usuário não possui vazamentos";
           status = 404;
-
           return sendResponse({ message, status, BD, res });
         }
         message = "Usuário possui vazamentos";
@@ -223,7 +214,6 @@ module.exports = (app) => {
         if (error) {
           message = "Usuário não possui vazamentos";
           status = 404;
-
           return sendResponseVazamento({ message, status, res });
         }
       });
