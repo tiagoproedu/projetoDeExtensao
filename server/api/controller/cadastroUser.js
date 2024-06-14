@@ -1,6 +1,7 @@
 const uuidv4 = require("uuid/v4");
 const axios = require("axios");
 const oracledb = require("oracledb");
+const transformData = require("../utils");
 
 module.exports = (app) => {
   const cadastroUserDB = app.data.cadastroUser;
@@ -10,7 +11,7 @@ module.exports = (app) => {
     res.status(status).json({ message, BD });
 
   const sendResponseVazamento = ({ message, res, status, response }) =>
-    res.status(status).json({ message, response });
+    res.status(status).json({ message, response: response });
 
   const { cadastroUser: cadastroUserMock } = cadastroUserDB;
 
@@ -192,8 +193,8 @@ module.exports = (app) => {
   controller.getLeak = (req, res) => {
     const { email } = req.params;
 
-    const apiKey = "chave";
-    const urlFicticia = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}`;
+    const apiKey = "af0b71df3c064e80a58c9d8cfdac51c4";
+    const urlFicticia = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}?truncateResponse=false`;
     let message = "";
     let status = null;
     axios
@@ -214,7 +215,7 @@ module.exports = (app) => {
         return sendResponseVazamento({
           message,
           status,
-          response: response.data,
+          response: transformData(response.data),
           res,
         });
       })
