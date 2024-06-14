@@ -194,11 +194,11 @@ module.exports = (app) => {
     const { email } = req.params;
 
     const apiKey = "af0b71df3c064e80a58c9d8cfdac51c4";
-    const urlFicticia = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}?truncateResponse=false`;
+    const url = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}?truncateResponse=false`;
     let message = "";
     let status = null;
     axios
-      .get(urlFicticia, {
+      .get(url, {
         headers: {
           "hibp-api-key": apiKey,
         },
