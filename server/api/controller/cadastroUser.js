@@ -70,7 +70,7 @@ module.exports = (app) => {
     try {
       // connection = await oracledb.getConnection();
       // await connection.execute(
-      //   `BEGIN 
+      //   `BEGIN
       //      saveUser(:id, :name, :email);
       //    END;`,
       //   {
@@ -90,15 +90,20 @@ module.exports = (app) => {
 
       // Chame a função getLeak e aguarde sua resposta
       const responseLeak = await new Promise((resolve, reject) => {
-        controller.getLeak({ params: { email } }, {
-          status: (statusCode) => ({
-            json: (data) => resolve({ statusCode, data })
-          })
-        });
+        controller.getLeak(
+          { params: { email } },
+          {
+            status: (statusCode) => ({
+              json: (data) => resolve({ statusCode, data }),
+            }),
+          }
+        );
       });
 
       const message = "Usuário criado com sucesso";
-      res.status(responseLeak.statusCode).json({ message, leakData: responseLeak.data });
+      res
+        .status(responseLeak.statusCode)
+        .json({ message, leakData: responseLeak.data });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
@@ -185,7 +190,7 @@ module.exports = (app) => {
 
   controller.getLeak = (req, res) => {
     const { email } = req.params;
-    const apiKey = "af0b71df3c064e80a58c9d8cfdac51c4";
+    const apiKey = "chave-api-aqui";
     const url = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}?truncateResponse=false`;
     let message = "";
     let status = null;
