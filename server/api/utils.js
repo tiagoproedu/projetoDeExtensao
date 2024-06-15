@@ -1,9 +1,12 @@
 function transformData(response) {
-  return response.map((entry) => ({
-    name_domain: entry.Title,
-    leaked_data: convertLeakedData(entry.DataClasses),
-    breach_date: entry.BreachDate,
-  }));
+  const name_domain = response.map(entry => entry.Title).join(',');
+
+  const leaked_data = response.map(entry => convertLeakedData(entry.DataClasses)).join(',');
+
+  return {
+    name_domain,
+    leaked_data,
+  };
 }
 
 module.exports = transformData;
@@ -15,7 +18,17 @@ function convertLeakedData(dataClasses) {
     Passwords: "Senha",
   };
 
-  return dataClasses
-    .map((dataClass) => mapping[dataClass] || null)
-    .filter((dataClass) => dataClass !== null);
+  const uniqueClasses = new Set();
+
+  dataClasses.forEach((dataClass) => {
+    const mappedClass = mapping[dataClass];
+    if (mappedClass) {
+      uniqueClasses.add(mappedClass);
+    }
+  });
+
+  return Array.from(uniqueClasses).join(',');
 }
+
+
+

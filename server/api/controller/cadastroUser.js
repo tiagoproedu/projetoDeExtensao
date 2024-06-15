@@ -65,30 +65,33 @@ module.exports = (app) => {
 
   controller.save = async (req, res) => {
     let connection;
-    const { email, name } = req.body; // Adiciona a extração do email e name
+    const { email, name, password, type_disp, departament, name_disp, so } =
+      req.body;
 
     try {
-      // connection = await oracledb.getConnection();
-      // await connection.execute(
-      //   `BEGIN
-      //      saveUser(:id, :name, :email);
-      //    END;`,
-      //   {
-      //     id: { val: uuidv4(), type: oracledb.STRING, dir: oracledb.BIND_IN },
-      //     name: {
-      //       val: name,
-      //       type: oracledb.STRING,
-      //       dir: oracledb.BIND_IN,
-      //     },
-      //     email: {
-      //       val: email,
-      //       type: oracledb.STRING,
-      //       dir: oracledb.BIND_IN,
-      //     },
-      //   }
-      // );
+      connection = await oracledb.getConnection();
 
-      // Chame a função getLeak e aguarde sua resposta
+      // Chamar a procedure PRC_INS_INFORMACOES
+      await connection.execute(
+        `BEGIN
+          VAZOU.PRC_INS_INFORMACOES(:name, :email, :password, :type_disp, :departament, :name_disp, :so, :id_admin);
+        END;`,
+        {
+          name: { val: name, type: oracledb.STRING },
+          email: { val: email, type: oracledb.STRING },
+          password: { val: password, type: oracledb.STRING },
+          type_disp: { val: type_disp, type: oracledb.STRING },
+          departament: { val: departament, type: oracledb.STRING },
+          name_disp: { val: name_disp, type: oracledb.STRING },
+          so: { val: so, type: oracledb.STRING },
+          id_admin: { val: 1, type: oracledb.NUMBER },
+        }
+      );
+
+      // Commit da transação
+      await connection.execute("COMMIT");
+
+      // Chamar a função getLeak para obter os dados
       const responseLeak = await new Promise((resolve, reject) => {
         controller.getLeak(
           { params: { email } },
@@ -100,10 +103,40 @@ module.exports = (app) => {
         );
       });
 
+      const userData = await connection.execute(
+        `SELECT "ID_Funcionario" FROM vazou.tb_informacoes WHERE "ID_Funcionario" = (SELECT MAX("ID_Funcionario") FROM vazou.tb_informacoes)`
+      );
+      if (responseLeak.data.message === "Usuário não possui vazamentos") { 
+        return res.status(200).json({ message: "Usuário não possui vazamentos" });
+      }
+      const leakData = responseLeak.data;
+
+      const result = await connection.execute(
+        `BEGIN 
+           VAZOU.PRC_INS_TESTE(:id, :status, :dados, :dominio);
+         END;`,
+        {
+          id: { val: userData.rows[0][0], type: oracledb.NUMBER }, // Gerar um UUID para exemplo
+          status: { val: "true", type: oracledb.STRING },
+          dados: { val: leakData.response.leaked_data, type: oracledb.STRING },
+          dominio: {
+            val: leakData.response.name_domain,
+            type: oracledb.STRING,
+          },
+        }
+      );
+
+      // Recuperar os dados da procedure PRC_INS_TESTE, se necessário
+      const insertedData = {
+        id: userData.rows[0][0],
+        status: 'true',
+        dados: leakData.response.leaked_data,
+        dominio: leakData.response.name_domain,
+      };
+
       const message = "Usuário criado com sucesso";
-      res
-        .status(responseLeak.statusCode)
-        .json({ message, leakData: responseLeak.data });
+      res.status(200).json({ message, leakData, insertedData });
+      await connection.execute("COMMIT");
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
@@ -190,7 +223,7 @@ module.exports = (app) => {
 
   controller.getLeak = (req, res) => {
     const { email } = req.params;
-    const apiKey = "chave-api-aqui";
+    const apiKey = "af0b71df3c064e80a58c9d8cfdac51c4";
     const url = `https://haveibeenpwned.com/api/v3/breachedaccount/${email}?truncateResponse=false`;
     let message = "";
     let status = null;
@@ -202,6 +235,7 @@ module.exports = (app) => {
       })
       .then((response) => {
         if (response.data.error) {
+          console.log('socorro senhor')
           message = "Usuário não possui vazamentos";
           status = 404;
           return sendResponse({ message, status, BD, res });
