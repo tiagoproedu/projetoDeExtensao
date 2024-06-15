@@ -30,3 +30,9 @@ export function putUser(user) {
         .put('/cadastroUser/' + user.id, user)
         .then()
 }
+
+export function getAllLeaks() {
+    return api
+        .get('/pesquisarVazamento')
+        .then()
+}

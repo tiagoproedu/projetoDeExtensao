@@ -29,7 +29,6 @@ module.exports = (app) => {
       const tablesResult = await connection.execute(
         "SELECT table_name FROM user_tables"
       );
-      console.log("Tabelas no esquema:", tablesResult.rows);
 
       const result = await connection.execute(
         `BEGIN 
@@ -106,8 +105,10 @@ module.exports = (app) => {
       const userData = await connection.execute(
         `SELECT "ID_Funcionario" FROM vazou.tb_informacoes WHERE "ID_Funcionario" = (SELECT MAX("ID_Funcionario") FROM vazou.tb_informacoes)`
       );
-      if (responseLeak.data.message === "Usuário não possui vazamentos") { 
-        return res.status(200).json({ message: "Usuário não possui vazamentos" });
+      if (responseLeak.data.message === "Usuário não possui vazamentos") {
+        return res
+          .status(200)
+          .json({ message: "Usuário não possui vazamentos" });
       }
       const leakData = responseLeak.data;
 
@@ -129,7 +130,7 @@ module.exports = (app) => {
       // Recuperar os dados da procedure PRC_INS_TESTE, se necessário
       const insertedData = {
         id: userData.rows[0][0],
-        status: 'true',
+        status: "true",
         dados: leakData.response.leaked_data,
         dominio: leakData.response.name_domain,
       };
@@ -235,7 +236,6 @@ module.exports = (app) => {
       })
       .then((response) => {
         if (response.data.error) {
-          console.log('socorro senhor')
           message = "Usuário não possui vazamentos";
           status = 404;
           return sendResponse({ message, status, BD, res });
@@ -256,6 +256,34 @@ module.exports = (app) => {
           return sendResponseVazamento({ message, status, res });
         }
       });
+  };
+
+  controller.getAllLeaks = async (req, res) => {
+    let connection;
+
+    try {
+      connection = await oracledb.getConnection();
+      const result = await connection.execute(
+        "SELECT * FROM TABLE(VAZOU.FN_GET_TESTE)"
+      );
+
+      if (result) {
+        res.status(200).json(result);
+      } else {
+        res.status(404).json({ message: "Não há vazamentos" });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Erro ao conectar ao banco de dados" });
+    } finally {
+      if (connection) {
+        try {
+          await connection.close();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
   };
 
   return controller;

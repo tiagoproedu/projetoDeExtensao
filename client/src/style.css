@@ -194,8 +194,8 @@ form button{
     height: 60vw;
 }
 #bodyVazamento{
-    width: 60vw;
-    height: 60vh;
+    width: 70vw;
+    height: 70vh;
     background-color: #3C5268;
     display: flex;
     flex-direction: column;
@@ -204,7 +204,7 @@ form button{
     align-items: center;
 }
 #headerVazamento{
-    width: 60vw;
+    width: 70vw;
     height: 7vh;
     display: flex;
     align-items: center;
@@ -218,8 +218,8 @@ form button{
     margin: 0;
 }
 .vazaCards{
-    width: 20vw;
-    height: 40vh;
+    width: 30vw;
+    height: 50vh;
     display: flex;
     flex-direction: column;
 }

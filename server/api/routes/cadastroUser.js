@@ -12,4 +12,7 @@ module.exports = app => {
 
     app.route('/api/v1/pesquisarVazamento/:email')
         .get(controller.getLeak)
+
+    app.route('/api/v1/pesquisarVazamento')
+        .get(controller.getAllLeaks);
 }
